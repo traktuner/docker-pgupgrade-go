@@ -11,16 +11,16 @@ import (
 )
 
 var (
-	appname    = "docker-pgupgrade-go"
-	version    = "0.1"
-	author     = "Traktuner"
+	appname = "docker-pgupgrade-go"
+	version = "0.1"
+	author = "Traktuner"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
 	//Output version tag
-    fmt.Println("====================================")
+	fmt.Println("====================================")
     fmt.Printf(" %s\n", appname)
     fmt.Printf(" Version: %s\n", version)
     fmt.Printf(" Developed by: %s\n", author)
