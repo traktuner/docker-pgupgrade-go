@@ -14,7 +14,6 @@ var (
 	appname    = "docker-pgupgrade-go"
 	version    = "0.1"
 	author     = "Traktuner"
-	buildDate  = "not set" // This will be set at compile-time
 )
 
 func main() {
@@ -25,7 +24,6 @@ func main() {
     fmt.Printf(" %s\n", appname)
     fmt.Printf(" Version: %s\n", version)
     fmt.Printf(" Developed by: %s\n", author)
-    fmt.Printf(" Build Date: %s\n", buildDate)
     fmt.Println("====================================")
 
 	
