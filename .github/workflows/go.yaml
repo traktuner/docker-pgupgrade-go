@@ -1,0 +1,73 @@
+name: Go
+
+on: [push, pull_request]
+
+env:
+  GO_VERSION: "1.21"
+  GHCR_REGISTRY: ghcr.io
+  GHCR_REGISTRY_IMAGE: "ghcr.io/${{ github.repository }}"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          go install golang.org/x/tools/cmd/goimports@latest
+          go install honnef.co/go/tools/cmd/staticcheck@latest
+          export PATH="$HOME/go/bin:$PATH"
+
+      - name: Run pre-commit
+        uses: pre-commit/action@v3.0.0
+
+  build:
+    runs-on: ubuntu-latest
+    env:
+      CGO_ENABLED: "0"
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Build binaries
+        run: ./ci-build-all.sh
+
+      - name: Upload linux/amd64 artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-pgupgrade-linux-amd64
+          path: docker-pgupgrade-linux-amd64
+          if-no-files-found: error
+
+      - name: Upload linux/arm64 artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-pgupgrade-linux-arm64
+          path: docker-pgupgrade-linux-arm64
+          if-no-files-found: error
+
+      - name: Upload macos/amd64 artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-pgupgrade-macos-amd64
+          path: docker-pgupgrade-macos-amd64
+          if-no-files-found: error
+
+      - name: Upload macos/arm64 artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-pgupgrade-macos-arm64
+          path: docker-pgupgrade-macos-arm64
+          if-no-files-found: error
