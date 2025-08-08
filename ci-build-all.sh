@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -euo pipefail
 
 # Resolve modules (required for CI where module cache is empty)
