@@ -56,13 +56,6 @@ Database migration completed successfully.
 - Sicherheit: Passwörter werden nicht geloggt; Quoting in Pipes ist gehärtet
  - Verifikation: `quick` vergleicht Schema (ohne Owner/ACLs), `full` ergänzt Row Counts für alle Nutzertabellen
 
-## Ideen für weitere Verbesserungen
-- Non-interaktiver Modus per Flags/ENV (z. B. `--src`, `--dst`, `--image`, `--volume`, `--stream`, `--with-globals`)
-- Validierung der Major-Versionen und Warnungen (Breaking Changes)
-- "Dry Run"-Check (nur Verbindungen und Rechte prüfen)
-- Automatisches Stoppen/Umbenennen: alten Container stoppen, neuen unter altem Namen starten (optional)
-- Unterstützung für Docker Compose Services (Erkennung via Labels)
-
 ## Build
 - Voraussetzungen: Go, Docker
 - Abhängigkeiten holen und bauen:
