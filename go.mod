@@ -1,7 +1,7 @@
 module github.com/traktuner/docker-pgupgrade-go
 
-go 1.24.0
+go 1.25.0
 
-require golang.org/x/term v0.40.0
+require golang.org/x/term v0.43.0
 
-require golang.org/x/sys v0.41.0 // indirect
+require golang.org/x/sys v0.44.0 // indirect
