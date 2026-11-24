@@ -1,0 +1,6 @@
+.git
+.github
+*.md
+Dockerfile
+.pre-commit-config.yaml
+docker-pgupgrade-*
