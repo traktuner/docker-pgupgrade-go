@@ -1,0 +1,76 @@
+# Example: run one database migration as a Kubernetes Job.
+#
+# The Job uses the non-interactive mode of docker-pgupgrade-go. Configure
+# everything through environment variables; inject the passwords from a
+# Secret. The Job fails (non-zero exit) when the migration or the
+# verification fails.
+#
+# Prerequisites:
+#   - Source and destination PostgreSQL instances accept TCP connections
+#     from inside the cluster.
+#   - The destination database exists and is empty (fresh instance).
+#
+# The image tag below is the one CI publishes on every master push. Pin a
+# commit SHA tag for reproducible migrations.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pg-migration-example
+  labels:
+    app: docker-pgupgrade-go
+spec:
+  # One attempt: a failed migration should be inspected, not retried blind.
+  backoffLimit: 0
+  # Hard wall-clock guard: an unreachable endpoint can otherwise stall the
+  # pod until someone notices. Scale to your largest realistic migration.
+  activeDeadlineSeconds: 7200
+  template:
+    metadata:
+      labels:
+        app: docker-pgupgrade-go
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: pg-migration
+          image: ghcr.io/traktuner/docker-pgupgrade-go:master
+          args:
+            - --dst-wait=120
+            - --verify=full
+          env:
+            # Source connection
+            - name: PGSRC_HOST
+              value: postgres-old.default.svc.cluster.local
+            - name: PGSRC_PORT
+              value: "5432"
+            - name: PGSRC_USER
+              value: postgres
+            - name: PGSRC_DB
+              value: mydb
+            - name: PGSRC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pg-migration-credentials
+                  key: src-password
+            # Destination connection
+            - name: PGDST_HOST
+              value: postgres-new.default.svc.cluster.local
+            - name: PGDST_PORT
+              value: "5432"
+            - name: PGDST_USER
+              value: postgres
+            - name: PGDST_DB
+              value: mydb
+            - name: PGDST_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pg-migration-credentials
+                  key: dst-password
+            # Optional behavior
+            - name: PGUPGRADE_GLOBALS
+              value: "false"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 512Mi

@@ -3,9 +3,12 @@ name: Go
 on: [push, pull_request]
 
 env:
-  GO_VERSION: "1.24"
+  GO_VERSION: "1.26"
   GHCR_REGISTRY: ghcr.io
   GHCR_REGISTRY_IMAGE: "ghcr.io/${{ github.repository }}"
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -20,6 +23,12 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: true
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Vet
+        run: go vet ./...
 
       - name: Build binaries
         run: ./ci-build-all.sh
@@ -51,3 +60,36 @@ jobs:
           name: docker-pgupgrade-macos-arm64
           path: docker-pgupgrade-macos-arm64
           if-no-files-found: error
+
+  docker:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GitHub Container Registry
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.GHCR_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build (and push on master)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
+          tags: |
+            ${{ env.GHCR_REGISTRY_IMAGE }}:${{ github.sha }}
+            ${{ env.GHCR_REGISTRY_IMAGE }}:master
+          cache-from: type=gha
+          # ignore-error: on fork pull requests the gha cache is read-only and
+          # a cache export would fail the step; same-repo PRs are unaffected.
+          cache-to: type=gha,mode=min,ignore-error=true
